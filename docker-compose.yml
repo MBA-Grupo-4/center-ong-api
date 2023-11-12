@@ -16,7 +16,7 @@ services:
       MYSQL_USER: admin
       MYSQL_PASSWORD: MBAGrupo4
     volumes:
-      - ./mysql_data:/var/lib/mysql
+      - mysql-data:/mysql_data:/var/lib/mysql
     ports:
       - "3707:3306"   
     networks:
@@ -32,7 +32,7 @@ services:
       - "3000:3000"
     volumes:
       - .:/app
-       - /app/node_modules     
+      - /app/node_modules       
     environment:
       NODE_ENV: development
       CHOKIDAR_USEPOLLING: "true"  
@@ -40,3 +40,6 @@ services:
       - database
     networks:
       - connection
+
+volumes:
+  mysql-data:
