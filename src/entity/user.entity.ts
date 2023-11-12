@@ -14,4 +14,17 @@ export class User {
 
   @Column()
   password: string;
+
+  @Column()
+  isOng: boolean
+
+  @Column()
+  birthdate: Date
+
+  @Column()
+  telephone: String
+  
+  @Column()
+  gender: String
+
 }
