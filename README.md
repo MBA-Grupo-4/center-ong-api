@@ -58,16 +58,14 @@ $ npm run test:e2e
 $ npm run test:cov
 ```
 
-## Support
+## Container Docker
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+Instale o docker desktop em sua máquina
 
-## Stay in touch
+Execute o comando docker-compose up --build na primeira execução
 
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+O container MYSQL não conecta na API pelo container name, então é necessário encontrar o IP do Gateway do MYSQL, PARA ISSO FAÇA O SEGUINTE:
 
-## License
+docker ps -> Ira abrir uma lista dos container ativos, pegue o id do container MYSQL e execute docker inspect [ID DO CONTAINER]
 
-Nest is [MIT licensed](LICENSE).
+Pegue o IP do gateway e coloque no lugar do host no arquivo app.module.ts da conexão com a base de dados
