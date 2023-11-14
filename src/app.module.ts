@@ -10,7 +10,7 @@ import { DataSource } from 'typeorm';
   imports: [
     TypeOrmModule.forRoot({
       type: 'mysql',
-      host: '172.20.0.1',
+      host: '172.19.0.1',
       port: 3707,
       username: 'root',
       password: 'MBAGrupo4',
