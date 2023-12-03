@@ -1,5 +1,5 @@
 // user.controller.ts
-import { Controller, Get, Param, Post, Body } from '@nestjs/common';
+import { Controller, Get, Param, Post, Body, Put } from '@nestjs/common';
 import { UserService } from './user.service';
 import { User } from '../entity/user.entity';
 import { ApiTags } from '@nestjs/swagger';
@@ -22,5 +22,10 @@ export class UserController {
   @Post()
   create(@Body() user: User): Promise<User> {
     return this.userService.create(user);
+  }
+
+  @Put()
+  update(@Body() user: User): Promise<User> {
+    return this.userService.update(user);
   }
 }
