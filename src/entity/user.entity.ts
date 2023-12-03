@@ -1,13 +1,11 @@
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, ManyToMany, JoinTable } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
+import { Category } from './category.entity';
+import { BaseEntity } from './base.entity';
 
 @Entity()
-export class User {
+export class User extends BaseEntity {
     
-  @ApiProperty()
-  @PrimaryGeneratedColumn()
-  id: number;
-
   @ApiProperty()
   @Column()
   username: string;
@@ -35,5 +33,10 @@ export class User {
   @ApiProperty()
   @Column()  
   gender: String
+
+  @ApiProperty()
+  @ManyToMany(() => Category, { eager: true }) // eager loading para carregar automaticamente as categorias ao carregar um usuário
+  @JoinTable()
+  categories: Category[];
 
 }
