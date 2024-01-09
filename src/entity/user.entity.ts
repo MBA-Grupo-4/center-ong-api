@@ -1,7 +1,7 @@
 import { Entity, Column, PrimaryGeneratedColumn, ManyToMany, JoinTable } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
 import { Category } from './category.entity';
-import { BaseEntity } from './base.entity';
+import { BaseEntity } from './base';
 
 @Entity()
 export class User extends BaseEntity {
@@ -15,7 +15,7 @@ export class User extends BaseEntity {
   email: string;
 
   @ApiProperty()
-  @Column()
+  @Column({length : 250})
   password: string;
 
   @ApiProperty()
