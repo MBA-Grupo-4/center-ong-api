@@ -34,7 +34,9 @@ import { CryptoService } from './crypto.service';
     }
   
     async gerarToken(payload: User) {
-      return {
+      delete payload.password;
+      return {       
+        user: payload,
         access_token: this.jwtService.sign(
           { email: payload.email },
           {

@@ -9,6 +9,12 @@ import { CategoryModule } from './category/category.module';
 import { User } from './entity/user.entity';
 import { Category } from './entity/category.entity';
 import { AuthModule } from './auth/auth.module';
+import { PassportModule } from '@nestjs/passport';
+import { AuthService } from './auth/auth.service';
+import { JwtStrategy } from './auth/local-auth';
+import { JwtModule } from '@nestjs/jwt';
+import { CryptoService } from './auth/crypto.service';
+
 
 @Module({
   imports: [
@@ -24,8 +30,11 @@ import { AuthModule } from './auth/auth.module';
     }),
     UserModule,
     CategoryModule,
-    AuthModule
-  ]
+    AuthModule,    
+    JwtModule.register({}),
+    TypeOrmModule.forFeature([User,Category])
+  ],
+  providers: [UserService, AuthService, JwtStrategy, CryptoService]
 })
 
 export class AppModule {
