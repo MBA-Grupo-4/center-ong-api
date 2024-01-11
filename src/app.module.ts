@@ -8,12 +8,13 @@ import { DataSource } from 'typeorm';
 import { CategoryModule } from './category/category.module';
 import { User } from './entity/user.entity';
 import { Category } from './entity/category.entity';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
     TypeOrmModule.forRoot({
       type: 'mysql',
-      host: '172.19.0.1',
+      host: '172.20.0.1',
       port: 3707,
       username: 'root',
       password: 'MBAGrupo4',
@@ -22,7 +23,8 @@ import { Category } from './entity/category.entity';
       synchronize: true      
     }),
     UserModule,
-    CategoryModule
+    CategoryModule,
+    AuthModule
   ]
 })
 

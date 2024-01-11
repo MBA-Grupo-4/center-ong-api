@@ -4,7 +4,7 @@ import { Category } from './category.entity';
 import { BaseEntity } from './base';
 
 @Entity()
-export class User extends BaseEntity {
+export class Ong extends BaseEntity {
     
   @ApiProperty()
   @Column()
@@ -35,8 +35,19 @@ export class User extends BaseEntity {
   gender: String
 
   @ApiProperty()
+  @Column()  
+  approved: boolean;
+
+  @ApiProperty()
+  @Column()  
+  rejected: boolean;
+
+  @ApiProperty()
+  @Column()
+  rejectionReason?: string;
+
+  @ApiProperty()
   @ManyToMany(() => Category, { eager: true }) // eager loading para carregar automaticamente as categorias ao carregar um usuário
   @JoinTable()
   categories: Category[];
-
 }
