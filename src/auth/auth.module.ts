@@ -10,15 +10,16 @@ import { UserService } from 'src/user/user.service';
 import { JwtStrategy } from './local-auth';
 import { AuthController } from './auth.controller';
 import { CryptoService } from './crypto.service';
+import { MailService } from 'src/mailer/mail.service';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([User, Category]), 
     JwtModule.register({}),
     PassportModule,
-    JwtModule,
+    JwtModule
   ],
-  providers: [AuthService, UserService, JwtStrategy, CryptoService],
+  providers: [AuthService, UserService, JwtStrategy, CryptoService, MailService],
   controllers: [AuthController]
 })
 export class AuthModule {}

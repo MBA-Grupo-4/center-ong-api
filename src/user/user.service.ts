@@ -29,9 +29,9 @@ export class UserService {
   }
 
   async findOne(id: number): Promise<User> {
-    const user =  this.userRepository.findOne({ where: { id } });
+    const user =  await this.userRepository.findOne({ where: { id } });
 
-    delete (await user).password;
+    delete user.password;
 
     return user;
   }  
@@ -55,8 +55,10 @@ export class UserService {
       newUser.categories = categoriesEntities;
     }
 
+   
+    await this.userRepository.save(newUser);
     delete newUser.password;
-    return this.userRepository.save(newUser);
+    return newUser;
   }
   
   async update(user: User): Promise<User> {
@@ -102,14 +104,22 @@ export class UserService {
       throw new Error(`Erro ao excluir usuário: ${error.message}`);
     }
          
-}
+  }
 
-async findByEmail(email : string) : Promise<User> {
-      try {
-       return await this.userRepository.findOne({where : { email : email}});
-      } catch (error){
-        throw new Error('Erro ao buscar usuário');
-      } 
+  async findByEmail(email : string) : Promise<User> {
+     
+        return await this.userRepository.findOne({where : { email : email.trim()}});
+      
+  }
+
+  async updateUserPassword(email: string, newPassword: string): Promise<void> {
+    try {
+      const user = await this.userRepository.findOne({where : { email : email}});  
+      user.password = await this.cryptoService.hashPassword(newPassword);
+      await this.userRepository.save(user);
+    } catch (error){
+      throw new Error('Erro ao buscar usuário');
+    } 
 }
 
 }

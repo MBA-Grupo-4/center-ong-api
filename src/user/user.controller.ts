@@ -26,7 +26,6 @@ export class UserController {
 
   @Post()
   @HttpCode(200)
-  @UseGuards(AuthGuard('jwt'))
   create(@Body() user: User): Promise<User> {
     return this.userService.create(user);
   }

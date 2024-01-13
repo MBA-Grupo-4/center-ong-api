@@ -14,13 +14,17 @@ import { AuthService } from './auth/auth.service';
 import { JwtStrategy } from './auth/local-auth';
 import { JwtModule } from '@nestjs/jwt';
 import { CryptoService } from './auth/crypto.service';
+// import { FeedModule } from './feed/feed.module';
+import { MailModule } from './mailer/mailer.module';
+import { MailService } from './mailer/mail.service';
 
 
 @Module({
   imports: [
+    TypeOrmModule.forFeature([User,Category]),
     TypeOrmModule.forRoot({
       type: 'mysql',
-      host: '172.20.0.1',
+      host: 'localhost',
       port: 3707,
       username: 'root',
       password: 'MBAGrupo4',
@@ -31,10 +35,11 @@ import { CryptoService } from './auth/crypto.service';
     UserModule,
     CategoryModule,
     AuthModule,    
-    JwtModule.register({}),
-    TypeOrmModule.forFeature([User,Category])
+    JwtModule.register({}),  
+    // FeedModule,
+    MailModule
   ],
-  providers: [UserService, AuthService, JwtStrategy, CryptoService]
+  providers: [UserService, AuthService, JwtStrategy, CryptoService, MailService]
 })
 
 export class AppModule {
