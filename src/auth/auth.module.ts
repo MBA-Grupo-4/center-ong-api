@@ -7,17 +7,19 @@ import { AuthService } from './auth.service';
 import { Category } from 'src/entity/category.entity';
 import { User } from 'src/entity/user.entity';
 import { UserService } from 'src/user/user.service';
-import { LocalStrategy } from './local-auth';
+import { JwtStrategy } from './local-auth';
 import { AuthController } from './auth.controller';
 import { CryptoService } from './crypto.service';
+import { MailService } from 'src/mailer/mail.service';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User, Category]),
+    TypeOrmModule.forFeature([User, Category]), 
+    JwtModule.register({}),
     PassportModule,
-    JwtModule,
+    JwtModule
   ],
-  providers: [AuthService, UserService, LocalStrategy, CryptoService],
+  providers: [AuthService, UserService, JwtStrategy, CryptoService, MailService],
   controllers: [AuthController]
 })
 export class AuthModule {}

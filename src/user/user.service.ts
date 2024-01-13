@@ -18,11 +18,22 @@ export class UserService {
   ) {}
 
   async findAll(): Promise<User[]> {
-    return await this.userRepository.find();
+    const users = await this.userRepository.find();
+
+    // Remover a senha de todos os usuários
+    users.forEach(user => {
+      delete user.password;
+    });
+  
+    return users;
   }
 
   async findOne(id: number): Promise<User> {
-    return await this.userRepository.findOne({ where: { id } });
+    const user =  await this.userRepository.findOne({ where: { id } });
+
+    delete user.password;
+
+    return user;
   }  
 
   async create(user: User): Promise<User> {
@@ -40,11 +51,14 @@ export class UserService {
     });
 
     if (categories && categories.length > 0) {           
-      const categoriesEntities = await this.categoryRepository.findBy({ id: In(categories.map(category => category.id)) } );      
+      const categoriesEntities = await this.categoryRepository.findBy({ name: In(categories.map(category => category.name)) } );      
       newUser.categories = categoriesEntities;
     }
 
-    return this.userRepository.save(newUser);
+   
+    await this.userRepository.save(newUser);
+    delete newUser.password;
+    return newUser;
   }
   
   async update(user: User): Promise<User> {
@@ -75,7 +89,7 @@ export class UserService {
       }
        
       const updatedUser = await this.userRepository.save(existingUser);
-  
+      delete updatedUser.password;
       return updatedUser;
     } catch (error) {
       throw new Error(`Erro ao atualizar usuário: ${error.message}`);
@@ -90,14 +104,22 @@ export class UserService {
       throw new Error(`Erro ao excluir usuário: ${error.message}`);
     }
          
-}
+  }
 
-async findByEmail(email : string) : Promise<User> {
-      try {
-       return await this.userRepository.findOne({where : { email : email}});
-      } catch (error){
-        throw new Error('Erro ao buscar usuário');
-      } 
+  async findByEmail(email : string) : Promise<User> {
+     
+        return await this.userRepository.findOne({where : { email : email.trim()}});
+      
+  }
+
+  async updateUserPassword(email: string, newPassword: string): Promise<void> {
+    try {
+      const user = await this.userRepository.findOne({where : { email : email}});  
+      user.password = await this.cryptoService.hashPassword(newPassword);
+      await this.userRepository.save(user);
+    } catch (error){
+      throw new Error('Erro ao buscar usuário');
+    } 
 }
 
 }

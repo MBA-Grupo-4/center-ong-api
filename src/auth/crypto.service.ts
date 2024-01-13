@@ -20,17 +20,12 @@ export class CryptoService {
 
   async comparePasswords(password: string, storedPassword: string): Promise<boolean> {
     return new Promise((resolve, reject) => {
-      const [hashedPassword, salt] = storedPassword.split(':');
-        console.log(salt)
-        console.log(password)
+      const [hashedPassword, salt] = storedPassword.split(':');      
       crypto.pbkdf2(password, salt, 100000, 64, 'sha512', (err, derivedKey) => {
         if (err) {
           reject(err);
         } else {
-          const newHashedPassword = derivedKey.toString('hex');
-
-          console.log(newHashedPassword)
-          console.log(hashedPassword)
+          const newHashedPassword = derivedKey.toString('hex');         
           resolve(newHashedPassword === hashedPassword);
         }
       });

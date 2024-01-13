@@ -9,12 +9,22 @@ import { CategoryModule } from './category/category.module';
 import { User } from './entity/user.entity';
 import { Category } from './entity/category.entity';
 import { AuthModule } from './auth/auth.module';
+import { PassportModule } from '@nestjs/passport';
+import { AuthService } from './auth/auth.service';
+import { JwtStrategy } from './auth/local-auth';
+import { JwtModule } from '@nestjs/jwt';
+import { CryptoService } from './auth/crypto.service';
+// import { FeedModule } from './feed/feed.module';
+import { MailModule } from './mailer/mailer.module';
+import { MailService } from './mailer/mail.service';
+
 
 @Module({
   imports: [
+    TypeOrmModule.forFeature([User,Category]),
     TypeOrmModule.forRoot({
       type: 'mysql',
-      host: '172.20.0.1',
+      host: 'localhost',
       port: 3707,
       username: 'root',
       password: 'MBAGrupo4',
@@ -24,8 +34,12 @@ import { AuthModule } from './auth/auth.module';
     }),
     UserModule,
     CategoryModule,
-    AuthModule
-  ]
+    AuthModule,    
+    JwtModule.register({}),  
+    // FeedModule,
+    MailModule
+  ],
+  providers: [UserService, AuthService, JwtStrategy, CryptoService, MailService]
 })
 
 export class AppModule {
