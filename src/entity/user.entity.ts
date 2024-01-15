@@ -1,7 +1,10 @@
-import { Entity, Column, PrimaryGeneratedColumn, ManyToMany, JoinTable } from 'typeorm';
+import { Entity, Column, ManyToMany, JoinTable, OneToMany } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
 import { Category } from './category.entity';
 import { BaseEntity } from './base';
+import { Post } from './post.entity';
+import { MaxLength } from 'class-validator';
+import { CommentEntity } from './comment.entity';
 
 @Entity()
 export class User extends BaseEntity {
@@ -9,6 +12,10 @@ export class User extends BaseEntity {
   @ApiProperty()
   @Column()
   username: string;
+
+  @ApiProperty()
+  @Column({ default: ''})
+  name: string;
 
   @ApiProperty()
   @Column()
@@ -35,8 +42,25 @@ export class User extends BaseEntity {
   gender: String
 
   @ApiProperty()
-  @ManyToMany(() => Category, { eager: true }) // eager loading para carregar automaticamente as categorias ao carregar um usuário
+  @Column({ length: 300 })  
+  aboutme?: String
+
+  @ApiProperty()
+  @ManyToMany(() => Category, { eager: true })
   @JoinTable()
   categories: Category[];
 
+  @ManyToMany(() => User)
+  @JoinTable({
+    name: 'user_followers',
+    joinColumn: { name: 'followerId', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'userId', referencedColumnName: 'id' },
+  })
+  following: User[];
+
+  @OneToMany(() => Post, (post) => post.author)
+  posts: Post[];
+
+  @OneToMany(() => CommentEntity, (comment) => comment.userCommentId)
+  comments: Comment[];
 }

@@ -3,9 +3,8 @@ import { Controller, Post, Body } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { Authentication } from 'src/entity/auth';
 import { ApiTags } from '@nestjs/swagger';
-import { ResetPasswordView } from 'src/entity/reset-password-view';
-import { ForgotPasswordView } from 'src/entity/forgot-password-view';
-
+import { ForgotPasswordView } from 'src/entity/view/auth/forgot-password-view';
+import { ResetPasswordView } from 'src/entity/view/auth/reset-password-view';
 
 @ApiTags('Auth')
 @Controller()

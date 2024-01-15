@@ -1,4 +1,3 @@
-// mail.service.ts
 import { Injectable } from '@nestjs/common';
 import { MailerService } from '@nestjs-modules/mailer';
 

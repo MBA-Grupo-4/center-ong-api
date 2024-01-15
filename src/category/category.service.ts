@@ -1,4 +1,3 @@
-// user.service.ts
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Category } from 'src/entity/category.entity';

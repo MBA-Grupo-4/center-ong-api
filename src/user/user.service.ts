@@ -1,48 +1,71 @@
-// user.service.ts
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException, Scope } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { User } from '../entity/user.entity';
 import { Category } from 'src/entity/category.entity';
 import * as bcrypt from 'bcrypt';
 import { CryptoService } from 'src/auth/crypto.service';
+import { validate } from 'class-validator';
+import { BaseNotification } from 'src/entity/base.notification';
 
 @Injectable()
-export class UserService {
+export class UserService  {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
     @InjectRepository(Category)
     private readonly categoryRepository: Repository<Category>,
     private readonly cryptoService: CryptoService,
-  ) {}
+  ) {  }
 
   async findAll(): Promise<User[]> {
-    const users = await this.userRepository.find();
+    const users = await this.userRepository
+    .createQueryBuilder('user')
+    .leftJoinAndSelect('user.following', 'following')   
+    .andWhere('user.dateDeleted is null')
+    .getMany();
 
-    // Remover a senha de todos os usuários
     users.forEach(user => {
       delete user.password;
+      user.following.forEach(follower => {
+        delete follower.password;
+      })
     });
+    
   
     return users;
   }
 
   async findOne(id: number): Promise<User> {
-    const user =  await this.userRepository.findOne({ where: { id } });
+    const user  = await this.userRepository
+    .createQueryBuilder('user')
+    .leftJoinAndSelect('user.following', 'following')
+    .where('user.id = :id', { id })  
+    .getOne();
 
     delete user.password;
+
+    user.following.forEach(follower => {
+        delete follower.password;
+    })
 
     return user;
   }  
 
-  async create(user: User): Promise<User> {
-    const { username, email, password, isOng, birthdate, telephone, gender, categories } = user;
-  
+  async create(user: User): Promise<User> {  
+    const { username, name, aboutme, email, password, isOng, birthdate, telephone, gender, categories } = user;   
+      
+    const existed = await this.findByEmail(email);
+
+    if(existed)
+      throw new BadRequestException('Usuário já existe, faça login');
+
     const hashedPassword = await this.cryptoService.hashPassword(password);
     const newUser = this.userRepository.create({
       username,
       email,
+      name,
+      aboutme,
       password : hashedPassword,
       isOng,
       birthdate,
@@ -63,8 +86,15 @@ export class UserService {
   
   async update(user: User): Promise<User> {
     try {
-      const { id, username, email, password, isOng, birthdate, telephone, gender, categories } = user;
-  
+
+      const errors = await validate(user);
+
+      if (errors.length > 0) {
+        throw new Error(`Validation error: ${errors.map(error => Object.values(error.constraints)).join(', ')}`);
+      }
+
+      const { id, username, name, aboutme, email, password, isOng, birthdate, telephone, gender, categories } = user;              
+          
       const existingUser = await this.userRepository.findOne({ where: {id : id}});
   
       if (!existingUser) {
@@ -74,6 +104,8 @@ export class UserService {
       const hashedPassword = await this.cryptoService.hashPassword(password); 
       existingUser.username = username;
       existingUser.email = email;
+      existingUser.name = name;
+      existingUser.aboutme = aboutme;
       existingUser.password = hashedPassword;
       existingUser.isOng = isOng;
       existingUser.birthdate = birthdate;
@@ -97,7 +129,7 @@ export class UserService {
   }
 
   async delete(id: number) : Promise<string> {
-    try{
+    try{      
       await this.userRepository.delete(id);
       return  "Excluido com sucesso!";
     } catch (error) {
@@ -106,10 +138,8 @@ export class UserService {
          
   }
 
-  async findByEmail(email : string) : Promise<User> {
-     
-        return await this.userRepository.findOne({where : { email : email.trim()}});
-      
+  async findByEmail(email : string) : Promise<User> {     
+        return await this.userRepository.findOne({where : { email : email.trim()}});      
   }
 
   async updateUserPassword(email: string, newPassword: string): Promise<void> {
@@ -120,6 +150,39 @@ export class UserService {
     } catch (error){
       throw new Error('Erro ao buscar usuário');
     } 
-}
+  }
+
+  async followUser(followerId: number, userId: number): Promise<void> {
+    const follower = await this.userRepository.findOne({ where: { id: followerId } });
+    const userToFollow = await this.userRepository.findOne({ where: { id: userId} });
+
+    if (!follower || !userToFollow) {
+      throw new NotFoundException('User not found');
+    }
+   
+    follower.following = follower.following || [];
+    follower.following.push(userToFollow);
+  
+    await this.userRepository.save(follower);
+  }
+
+  async unfollowUser(followerId: number, userId: number): Promise<void> {
+    const follower = await this.userRepository
+    .createQueryBuilder('user')
+    .leftJoinAndSelect('user.following', 'following')
+    .where('user.id = :followerId', { followerId })
+    .andWhere('dateDeleted is null')
+    .getOne();
+
+    if (!follower) {
+      throw new NotFoundException('User not found');
+    }
+
+    if(follower.following == undefined)
+      throw new NotFoundException('There are no followers')
+
+    follower.following = follower.following.filter(user => user.id !== userId);
+    await this.userRepository.save(follower);
+  }
 
 }

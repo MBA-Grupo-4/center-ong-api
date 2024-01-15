@@ -1,4 +1,3 @@
-// categories-initialization.service.ts
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { CategoryService } from './category.service';
 import { Category } from 'src/entity/category.entity';
