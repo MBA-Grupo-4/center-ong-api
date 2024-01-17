@@ -5,9 +5,7 @@ import { MailerService } from '@nestjs-modules/mailer';
 export class MailService {
   constructor(private readonly mailerService: MailerService) {}
 
-  async sendResetPasswordEmail(email: string, resetLink: string): Promise<void> {
-    console.log(email)
-    console.log(resetLink)
+  async sendResetPasswordEmail(email: string, resetLink: string): Promise<void> {    
     await this.mailerService.sendMail({
       to: email,
       subject: 'Redefinição de Senha',

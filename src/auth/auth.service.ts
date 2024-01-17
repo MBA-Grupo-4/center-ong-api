@@ -61,7 +61,7 @@ import { MailService } from 'src/mailer/mail.service';
   
       const token = await this.createToken(email)      
   
-      const resetLink = `http://localhost.com/reset-password?token=${token}`;
+      const resetLink = `http://localhost:5173/reset-password?token=${token}`;
       this.mailService.sendResetPasswordEmail(email, resetLink);
     }
 
