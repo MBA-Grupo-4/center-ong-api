@@ -53,12 +53,15 @@ export class UserService  {
   }  
 
   async create(user: User): Promise<User> {  
-    const { username, name, aboutme, email, password, isOng, birthdate, telephone, gender, categories } = user;   
+    const { username, name, aboutme, email, password, isOng, birthdate, telephone, gender, keyPix, categories } = user;   
       
     const existed = await this.findByEmail(email);
 
     if(existed)
       throw new BadRequestException('Usuário já existe, faça login');
+
+    if(!isOng && keyPix)
+      throw new BadRequestException("Apenas ONG'S possuem permissão para cadastrar chave pix");
 
     const hashedPassword = await this.cryptoService.hashPassword(password);
     const newUser = this.userRepository.create({
@@ -71,6 +74,7 @@ export class UserService  {
       birthdate,
       telephone,
       gender,
+      keyPix
     });
 
     if (categories && categories.length > 0) {           
@@ -93,13 +97,16 @@ export class UserService  {
         throw new Error(`Validation error: ${errors.map(error => Object.values(error.constraints)).join(', ')}`);
       }
 
-      const { id, username, name, aboutme, email, password, isOng, birthdate, telephone, gender, categories } = user;              
+      const { id, username, name, aboutme, email, password, isOng, birthdate, telephone, gender, keyPix, categories } = user;              
           
       const existingUser = await this.userRepository.findOne({ where: {id : id}});
   
       if (!existingUser) {
         throw new Error('Usuário não encontrado'); 
       }
+
+      if(!isOng && keyPix)
+      throw new BadRequestException("Apenas ONG'S possuem permissão para cadastrar chave pix");
              
       const hashedPassword = await this.cryptoService.hashPassword(password); 
       existingUser.username = username;
@@ -111,6 +118,7 @@ export class UserService  {
       existingUser.birthdate = birthdate;
       existingUser.telephone = telephone;
       existingUser.gender = gender;
+      existingUser.keyPix = keyPix;
   
     
       if (categories && categories.length > 0) {       

@@ -47,6 +47,10 @@ export class User extends BaseEntity {
   aboutme?: String
 
   @ApiProperty()
+  @Column({ length: 50 })
+  keyPix?: String
+
+  @ApiProperty()
   @ManyToMany(() => Category, { eager: true })
   @JoinTable()
   categories: Category[];
