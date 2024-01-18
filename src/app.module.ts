@@ -18,6 +18,7 @@ import { MailModule } from './mailer/mailer.module';
 import { MailService } from './mailer/mail.service';
 import { FeedModule } from './feed/feed.module';
 import { CommentEntity } from './entity/comment.entity';
+import { ShareModule } from './share/share.module';
 
 
 @Module({
@@ -38,7 +39,8 @@ import { CommentEntity } from './entity/comment.entity';
     AuthModule,    
     JwtModule.register({}),  
     FeedModule,
-    MailModule
+    MailModule,
+    ShareModule
   ],
   providers: [UserService, AuthService, JwtStrategy, CryptoService, MailService]
 })

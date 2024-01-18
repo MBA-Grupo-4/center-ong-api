@@ -4,6 +4,7 @@ import { validate } from 'class-validator';
 import { BaseNotification } from 'src/entity/base.notification';
 import { CommentEntity } from 'src/entity/comment.entity';
 import { Post } from 'src/entity/post.entity';
+import { SharePost } from 'src/entity/share.entity';
 import { User } from 'src/entity/user.entity';
 import { PostCreateView } from 'src/entity/view/post/post-create-view';
 import { PostUpdateView } from 'src/entity/view/post/post-update-view';
@@ -20,6 +21,10 @@ export class FeedService {
     @InjectRepository(CommentEntity) 
     private readonly commentRepository: Repository<CommentEntity>
   ) {}
+
+  async getPost(postId : number){
+    return await this.postRepository.findOne({where: {id : postId}});
+  }
 
   async getFeed(userId: number, page: number = 1, limit: number = 10): Promise<Post[]> {
     const user = await this.userRepository
@@ -140,5 +145,4 @@ export class FeedService {
 
       return "Publicação excluida com sucesso"
   }
-
 }

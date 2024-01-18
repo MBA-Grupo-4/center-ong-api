@@ -2,6 +2,7 @@ import { Entity, Column, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
 import { User } from './user.entity';
 import { BaseEntity } from './base';
 import { CommentEntity } from './comment.entity';
+import { SharePost } from './share.entity';
 
 @Entity()
 export class Post extends BaseEntity {
@@ -20,4 +21,7 @@ export class Post extends BaseEntity {
 
   @ManyToOne(() => User, (user) => user.posts, { eager: true, cascade: true })
   author: User;
+
+  @OneToMany(() => SharePost, (share) => share.post)
+  shares: SharePost[];
 }

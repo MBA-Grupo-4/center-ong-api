@@ -5,6 +5,7 @@ import { BaseEntity } from './base';
 import { Post } from './post.entity';
 import { MaxLength } from 'class-validator';
 import { CommentEntity } from './comment.entity';
+import { SharePost } from './share.entity';
 
 @Entity()
 export class User extends BaseEntity {
@@ -63,4 +64,7 @@ export class User extends BaseEntity {
 
   @OneToMany(() => CommentEntity, (comment) => comment.userCommentId)
   comments: Comment[];
+
+  @OneToMany(() => SharePost, (share) => share.userShare)
+  shares: SharePost[];
 }

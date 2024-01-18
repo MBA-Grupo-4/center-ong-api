@@ -1,7 +1,7 @@
 //auth.controller.ts
 import { Controller, Post, Body } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { Authentication } from 'src/entity/auth';
+import { Authentication } from 'src/entity/view/auth/auth';
 import { ApiTags } from '@nestjs/swagger';
 import { ForgotPasswordView } from 'src/entity/view/auth/forgot-password-view';
 import { ResetPasswordView } from 'src/entity/view/auth/reset-password-view';
