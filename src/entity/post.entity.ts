@@ -1,8 +1,9 @@
-import { Entity, Column, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
+import { Entity, Column, ManyToOne, OneToMany } from 'typeorm';
 import { User } from './user.entity';
 import { BaseEntity } from './base';
 import { CommentEntity } from './comment.entity';
 import { SharePost } from './share.entity';
+import { Liked } from './like.entity';
 
 @Entity()
 export class Post extends BaseEntity {
@@ -24,4 +25,8 @@ export class Post extends BaseEntity {
 
   @OneToMany(() => SharePost, (share) => share.post)
   shares: SharePost[];
+  
+  @OneToMany(() => Liked, liked => liked.post)
+  postLiked: Liked[];
+
 }

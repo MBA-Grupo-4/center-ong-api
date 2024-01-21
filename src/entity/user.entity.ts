@@ -6,6 +6,7 @@ import { Post } from './post.entity';
 import { MaxLength } from 'class-validator';
 import { CommentEntity } from './comment.entity';
 import { SharePost } from './share.entity';
+import { Liked } from './like.entity';
 
 @Entity()
 export class User extends BaseEntity {
@@ -47,7 +48,7 @@ export class User extends BaseEntity {
   aboutme?: String
 
   @ApiProperty()
-  @Column({ length: 50 })
+  @Column({ length: 50, nullable : true })
   keyPix?: String
 
   @ApiProperty()
@@ -71,4 +72,7 @@ export class User extends BaseEntity {
 
   @OneToMany(() => SharePost, (share) => share.userShare)
   shares: SharePost[];
+
+  @OneToMany(() => Liked, liked => liked.user)  
+  userLiked: Post[];
 }

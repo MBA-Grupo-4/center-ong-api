@@ -178,8 +178,7 @@ export class UserService  {
     const follower = await this.userRepository
     .createQueryBuilder('user')
     .leftJoinAndSelect('user.following', 'following')
-    .where('user.id = :followerId', { followerId })
-    .andWhere('dateDeleted is null')
+    .where('user.id = :followerId', { followerId })    
     .getOne();
 
     if (!follower) {

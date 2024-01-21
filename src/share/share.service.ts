@@ -21,14 +21,18 @@ constructor(
     private readonly postRepository : Repository<Post>
 ){}
 
-async getShares(userId: number) : Promise<SharePost[]> {
-    return await this.shareRepository.createQueryBuilder('share_post')
-    .leftJoinAndSelect('share_post.userShare', 'user')
-    .leftJoinAndSelect('share_post.post', 'post')
-    .where('user.id = :userId', { userId })
-    .getMany();
-}
-
+async getShares(userId: number): Promise<SharePost[]> {
+    return await this.shareRepository
+      .createQueryBuilder('share_post')
+      .leftJoinAndSelect('share_post.userShare', 'userShare')
+      .leftJoinAndSelect('share_post.post', 'post')
+      .leftJoinAndSelect('post.comments', 'comment')
+      .leftJoinAndSelect('post.author', 'author')
+      .leftJoinAndSelect('comment.userCommentId', 'commentUser') 
+      .where('userShare.id = :userId', { userId })
+      .getMany();
+  }
+  
 async ToShare(createShare : CreateShare) : Promise<SharePost> {    
     
     const { userShareId, postId } = createShare;

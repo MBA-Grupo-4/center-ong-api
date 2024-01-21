@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { validate } from 'class-validator';
 import { BaseNotification } from 'src/entity/base.notification';
 import { CommentEntity } from 'src/entity/comment.entity';
+import { Liked } from 'src/entity/like.entity';
 import { Post } from 'src/entity/post.entity';
 import { SharePost } from 'src/entity/share.entity';
 import { User } from 'src/entity/user.entity';
@@ -19,7 +20,9 @@ export class FeedService {
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
     @InjectRepository(CommentEntity) 
-    private readonly commentRepository: Repository<CommentEntity>
+    private readonly commentRepository: Repository<CommentEntity>,
+    @InjectRepository(Liked) 
+    private readonly likeRepository: Repository<Liked>
   ) {}
 
   async getPost(postId : number){
@@ -52,6 +55,8 @@ export class FeedService {
     .leftJoinAndSelect('post.comments', 'comment')
     .leftJoinAndSelect('comment.userCommentId', 'userCommentId') 
     .leftJoinAndSelect('post.author', 'author')
+    .leftJoinAndSelect('post.postLiked', 'postLiked') 
+    .leftJoinAndSelect('postLiked.user', 'likedUser')
     .where('post.author.id IN (:...followingIds)', { followingIds })    
     .orderBy('post.dateInclude', 'DESC')
     .skip((page - 1) * limit)
@@ -60,10 +65,51 @@ export class FeedService {
 
     posts.forEach(p => {
       delete p.author.password;
-    })
+      p.comments.map(c => {
+          delete c.userCommentId.password;
+      });         
+                     
+      p['liked'] = p.postLiked.some(like => like.user.id === Number(userId));
+      delete p.postLiked;
+  });
 
     return posts;
   }
+
+  async getTimeLine(userId: number, page: number = 1, limit: number = 10): Promise<Post[]> {
+    const user = await this.userRepository
+      .createQueryBuilder('user')
+      .leftJoinAndSelect('user.posts', 'post')
+      .leftJoinAndSelect('post.comments', 'comment')
+      .leftJoinAndSelect('comment.userCommentId', 'userCommentId')
+      .leftJoinAndSelect('post.author', 'author')
+      .where('user.id = :userId', { userId })
+      .andWhere('user.dateDeleted is null')
+      .getOne();
+  
+    if (!user) {
+      return [];
+    }
+  
+    const posts = user.posts || [];
+  
+    const userPosts = posts
+      .slice((page - 1) * limit, page * limit) // Paginação
+      .map(post => {
+        // Remove a senha do autor, se necessário
+        if (post.author) {
+          delete post.author.password;
+        }
+        post.comments.map(comment => {
+          delete comment.userCommentId.password;
+        });
+
+        return post;
+      });
+  
+    return userPosts;
+  }
+  
 
   async createPost(post : PostCreateView): Promise<Post> {    
    
@@ -109,13 +155,49 @@ export class FeedService {
     return this.postRepository.save(post);
   }
 
-  async likePost(postId: number): Promise<void> {
-    const post = await this.postRepository.findOne({ where: { id : postId } });
-    if (post) {
-      post.likes += 1;
-      await this.postRepository.save(post);
+  async likePost(postId: number, userId: number): Promise<void> {
+    const user = await this.userRepository.findOne({ where: { id: userId}});
+    const post = await this.postRepository.findOne({ where: { id : postId } });          
+
+    if (!user)
+      throw new NotFoundException('Not found user')
+
+    if (!post)
+      throw new NotFoundException('Not found post')
+
+      const alreadyLiked = await this.likeRepository.findOne({
+        where: { user: { id: userId }, post: { id: postId } },
+      });
+  
+      if (!alreadyLiked) {        
+        const like = new Liked();
+        like.user = user;
+        like.post = post;
+  
+        await this.likeRepository.save(like);
+          
+        post.likes += 1;
+        await this.postRepository.save(post);
+      }
+  }
+  
+  
+  async unlikePost(postId: number, userId: number): Promise<void> {    
+    const like = await this.likeRepository.findOne({
+      where: { user: { id: userId }, post: { id: postId } },
+    });
+  
+    if (like) {      
+      await this.likeRepository.remove(like);
+        
+      const post = await this.postRepository.findOne({where : { id : postId}});
+      if (post && post.likes > 0) {
+        post.likes -= 1;
+        await this.postRepository.save(post);
+      }
     }
   }
+  
 
   async commentPost(postId: number, userCommentId:number, comment: string): Promise<CommentEntity> {
     const post = await this.postRepository.findOne({ where: { id : postId} });

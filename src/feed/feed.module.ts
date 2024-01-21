@@ -5,9 +5,10 @@ import { Post as PostEntity} from 'src/entity/post.entity';
 import { FeedService } from './feed.service';
 import { User } from 'src/entity/user.entity';
 import { CommentEntity } from 'src/entity/comment.entity';
+import { Liked } from 'src/entity/like.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([PostEntity, User, CommentEntity])],
+  imports: [TypeOrmModule.forFeature([PostEntity, User, CommentEntity, Liked])],
   providers: [FeedService],
   controllers: [FeedController]
 })

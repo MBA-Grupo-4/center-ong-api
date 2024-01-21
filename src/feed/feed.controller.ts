@@ -19,10 +19,22 @@ export class FeedController extends BaseNotification {
     return  this.feedService.getFeed(userId, page, limit);
   }
 
+  @Get('timeline')
+  @UseGuards(AuthGuard('jwt'))
+  getTimeLine(@Query('userId') userId: number, @Query('page') page: number, @Query('limit') limit: number) : Promise<PostEntity[]> {
+    return  this.feedService.getTimeLine(userId, page, limit);
+  }
+
   @Post(':postId/like')
   @UseGuards(AuthGuard('jwt'))
-  likePost(@Param('postId') postId: number) : Promise<void> {
-    return this.feedService.likePost(postId);
+  likePost(@Param('postId') postId: number, @Body('userId') userId: number) : Promise<void> {
+    return this.feedService.likePost(postId, userId);
+  }
+
+  @Post(':postId/unlike')
+  @UseGuards(AuthGuard('jwt'))
+  unlikePost(@Param('postId') postId: number, @Body('userId') userId: number) : Promise<void> {
+    return this.feedService.unlikePost(postId, userId);
   }
 
   @Post(':postId/comment')
