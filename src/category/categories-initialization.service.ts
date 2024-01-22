@@ -24,7 +24,7 @@ export class CategoriesInitializationService implements OnModuleInit {
     const categoriasParaRemover = categoriasExistentes.filter(c => !categoriasPadrao.includes(c.name));
 
     for (const categoria of categoriasParaRemover) {
-      await this.categoryService.remove(categoria); // Certifique-se de ter um método de remoção adequado em seu serviço.
+      await this.categoryService.remove(categoria);
     }
     
   }
