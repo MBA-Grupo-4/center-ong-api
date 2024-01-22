@@ -38,6 +38,10 @@ export class User extends BaseEntity {
   @ApiProperty()
   @Column({ nullable: true })
   telephone: String
+
+  @ApiProperty()
+  @Column({nullable: true})
+  profilepic: String
   
   @ApiProperty()
   @Column()  

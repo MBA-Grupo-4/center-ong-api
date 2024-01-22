@@ -53,7 +53,7 @@ export class UserService  {
   }  
 
   async create(user: User): Promise<User> {  
-    const { username, name, aboutme, email, password, isOng, birthdate, telephone, gender, keyPix, categories } = user;   
+    const { username, name, aboutme, email, password, profilepic, isOng, birthdate, telephone, gender, keyPix, categories } = user;   
       
     const existed = await this.findByEmail(email);
 
@@ -71,6 +71,7 @@ export class UserService  {
       aboutme,
       password : hashedPassword,
       isOng,
+      profilepic,
       birthdate,
       telephone,
       gender,
@@ -97,7 +98,7 @@ export class UserService  {
         throw new Error(`Validation error: ${errors.map(error => Object.values(error.constraints)).join(', ')}`);
       }
 
-      const { id, username, name, aboutme, email, password, isOng, birthdate, telephone, gender, keyPix, categories } = user;              
+      const { id, username, name, aboutme, email,profilepic, password, isOng, birthdate, telephone, gender, keyPix, categories } = user;              
           
       const existingUser = await this.userRepository.findOne({ where: {id : id}});
   
@@ -119,6 +120,7 @@ export class UserService  {
       existingUser.telephone = telephone;
       existingUser.gender = gender;
       existingUser.keyPix = keyPix;
+      existingUser.profilepic = profilepic;
   
     
       if (categories && categories.length > 0) {       
