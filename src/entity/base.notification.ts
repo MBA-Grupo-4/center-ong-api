@@ -23,14 +23,18 @@ export abstract class BaseNotification {
     }
 
     hasMinLen(value, min, message) {
-        if (!value || value.length < min) {
-            this.notifications.push({ message: message })
+        if(value){
+            if (value.length < min) {
+                this.notifications.push({ message: message })
+            }
         }
     }
 
     hasMaxLen(value, max, message) {
-        if (!value || value.length > max) {
-            this.notifications.push({ message: message })
+        if(value){
+            if (value.length > max) {
+                this.notifications.push({ message: message })
+            }
         }
     }
 

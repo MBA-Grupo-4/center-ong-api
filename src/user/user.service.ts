@@ -53,7 +53,7 @@ export class UserService  {
   }  
 
   async create(user: User): Promise<User> {  
-    const { username, name, aboutme, email, password, profilepic, isOng, birthdate, telephone, gender, keyPix, categories } = user;   
+    const { username, name, aboutme, email, password, profilepic, isOng, birthdate, telephone, gender, keyPix, categories, category } = user;   
       
     const existed = await this.findByEmail(email);
 
@@ -62,6 +62,9 @@ export class UserService  {
 
     if(!isOng && keyPix)
       throw new BadRequestException("Apenas ONG'S possuem permissão para cadastrar chave pix");
+
+    if(isOng && !category)
+      throw new BadRequestException("É necessário informar a categoria da ONG");    
 
     const hashedPassword = await this.cryptoService.hashPassword(password);
     const newUser = this.userRepository.create({
@@ -75,8 +78,18 @@ export class UserService  {
       birthdate,
       telephone,
       gender,
-      keyPix
+      keyPix,
     });
+
+    if (isOng && category) {        
+        const existingCategory = await this.categoryRepository.findOne({ where: { name: category.name } });
+
+        if (!existingCategory) {
+          throw new BadRequestException('Categoria não encontrada');
+        }
+
+        newUser.category = existingCategory;
+    }
 
     if (categories && categories.length > 0) {           
       const categoriesEntities = await this.categoryRepository.findBy({ name: In(categories.map(category => category.name)) } );      
@@ -118,6 +131,16 @@ export class UserService  {
                 }
             }
         });              
+
+        if (existingUser.isOng && updatedFields.category !== undefined) {
+          const category = await this.categoryRepository.findOne({ where: { name: updatedFields.category.name } });
+
+          if (!category) {
+              throw new BadRequestException('Categoria não encontrada');
+          }
+
+          existingUser.category = category;
+        }
 
         const updatedUser = await this.userRepository.save(existingUser);
         delete updatedUser.password;
@@ -215,7 +238,25 @@ export class UserService  {
     } catch (error) {
         throw new Error(`Erro ao remover categoria do usuário: ${error.message}`);
     }
-}
+  }
+
+  async searchByUserCategories(userId: number): Promise<User[]> {
+    const user = await this.userRepository.findOne({ where: { id: userId }, relations: ['categories'] });
+    
+    if (!user) {
+      throw new Error('Usuário não encontrado');
+    }
+        
+    const usersByCategories = await this.userRepository.find({
+      where: {
+          category: {
+              id: In(user.categories.map(category => category.id))
+          }
+      }
+    });
+
+    return usersByCategories;
+  }
 
 
 }

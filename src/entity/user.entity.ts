@@ -1,4 +1,4 @@
-import { Entity, Column, ManyToMany, JoinTable, OneToMany } from 'typeorm';
+import { Entity, Column, ManyToMany, JoinTable, OneToMany, ManyToOne } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
 import { Category } from './category.entity';
 import { BaseEntity } from './base';
@@ -48,7 +48,7 @@ export class User extends BaseEntity {
   gender: String
 
   @ApiProperty()
-  @Column({ length: 300 })  
+  @Column({ length: 300, nullable: true })  
   aboutme?: String
 
   @ApiProperty()
@@ -59,6 +59,10 @@ export class User extends BaseEntity {
   @ManyToMany(() => Category, { eager: true })
   @JoinTable()
   categories: Category[];
+
+  @ApiProperty()
+  @ManyToOne(() => Category, (cat) => cat.user, { eager: true, cascade: true })
+  category: Category;
 
   @ManyToMany(() => User, {cascade: true})
   @JoinTable({

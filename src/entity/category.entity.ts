@@ -1,4 +1,4 @@
-import { Column, Entity, ManyToMany } from "typeorm";
+import { Column, Entity, ManyToMany, ManyToOne, OneToMany } from "typeorm";
 import { User } from "./user.entity";
 import { BaseEntity } from "./base";
 
@@ -11,4 +11,7 @@ export class Category extends BaseEntity {
 
     @ManyToMany(() => User, user => user.categories)
     users: User[];
+
+    @OneToMany(() => User, (user) => user.category)
+    user: User[];
 }
