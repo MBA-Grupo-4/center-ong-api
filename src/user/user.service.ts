@@ -252,7 +252,12 @@ export class UserService  {
           category: {
               id: In(user.categories.map(category => category.id))
           }
-      }
+      },
+      select: ['id', 'name', 'username'],
+    });
+    
+    usersByCategories.map(user => {
+       delete user.categories;
     });
 
     return usersByCategories;
