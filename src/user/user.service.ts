@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException, Scope } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException, Scope } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { User } from '../entity/user.entity';
@@ -89,54 +89,44 @@ export class UserService  {
     return newUser;
   }
   
-  async update(user: User): Promise<User> {
+  async update(updatedFields: Partial<User>): Promise<User> {
     try {
+        const existingUser = await this.userRepository.findOne({ where: { id: updatedFields.id } });
 
-      const errors = await validate(user);
+        if (!existingUser) {
+            throw new Error('Usuário não encontrado');
+        }
 
-      if (errors.length > 0) {
-        throw new Error(`Validation error: ${errors.map(error => Object.values(error.constraints)).join(', ')}`);
-      }
+        if(!existingUser.isOng && updatedFields.keyPix && updatedFields.keyPix.length > 0)
+          throw new BadRequestException('Apenas ONG possue permissão para cadastrar chave pix');
+        
+        Object.keys(updatedFields).forEach(async (field) => {
+            const value = updatedFields[field];
 
-      const { id, username, name, aboutme, email,profilepic, password, isOng, birthdate, telephone, gender, keyPix, categories } = user;              
-          
-      const existingUser = await this.userRepository.findOne({ where: {id : id}});
-  
-      if (!existingUser) {
-        throw new Error('Usuário não encontrado'); 
-      }
+            if (value !== undefined) {                
+                if (field === 'password') {                  
+                    await this.updateUserPassword(updatedFields.email, updatedFields.password)
+                } else if (field === 'categories') {                                    
+                  const newCategories = await this.categoryRepository.findBy({ name: In(value.map(category => category.name)) });
+                  newCategories.forEach(newCategory => {
+                      if (!existingUser.categories.some(userCategory => userCategory.id === newCategory.id)) {
+                          existingUser.categories.push(newCategory);
+                      }
+                  });
+                } else {
+                    existingUser[field] = value;
+                }
+            }
+        });              
 
-      if(!isOng && keyPix)
-      throw new BadRequestException("Apenas ONG'S possuem permissão para cadastrar chave pix");
-             
-      const hashedPassword = await this.cryptoService.hashPassword(password); 
-      existingUser.username = username;
-      existingUser.email = email;
-      existingUser.name = name;
-      existingUser.aboutme = aboutme;
-      existingUser.password = hashedPassword;
-      existingUser.isOng = isOng;
-      existingUser.birthdate = birthdate;
-      existingUser.telephone = telephone;
-      existingUser.gender = gender;
-      existingUser.keyPix = keyPix;
-      existingUser.profilepic = profilepic;
-  
-    
-      if (categories && categories.length > 0) {       
-        const categoriesEntities = await this.categoryRepository.findBy({ id: In(categories.map(category => category.id)) });         
-        existingUser.categories = categoriesEntities;
-      } else {       
-        existingUser.categories = [];
-      }
-       
-      const updatedUser = await this.userRepository.save(existingUser);
-      delete updatedUser.password;
-      return updatedUser;
+        const updatedUser = await this.userRepository.save(existingUser);
+        delete updatedUser.password;
+        return updatedUser;
     } catch (error) {
-      throw new Error(`Erro ao atualizar usuário: ${error.message}`);
+        throw new InternalServerErrorException(`Erro ao atualizar usuário: ${error.message}`);
     }
-  }
+}
+
 
   async delete(id: number) : Promise<string> {
     try{      
@@ -202,5 +192,30 @@ export class UserService  {
     follower.following = follower.following.filter(user => user.id !== userId);
     await this.userRepository.save(follower);
   }
+
+  async removeCategoryFromUser(userId: number, categoryId: number): Promise<User> {
+    try {
+        const user = await this.userRepository.findOne({ where: { id: userId }, relations: ['categories'] });
+
+        if (!user) {
+            throw new Error('Usuário não encontrado');
+        }
+
+        const categoryToRemove = user.categories.find(category => category.id === categoryId);
+
+        if (!categoryToRemove) {
+            throw new Error('Categoria não encontrada no usuário');
+        }
+
+        user.categories = user.categories.filter(category => category.id !== categoryId);
+
+        await this.userRepository.save(user);
+
+        return user;
+    } catch (error) {
+        throw new Error(`Erro ao remover categoria do usuário: ${error.message}`);
+    }
+}
+
 
 }

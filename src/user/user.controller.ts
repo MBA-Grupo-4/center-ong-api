@@ -1,10 +1,11 @@
-import { Controller, Get, Param, Post, Body, Put, Delete, Res, HttpCode, UseGuards, BadRequestException, Scope } from '@nestjs/common';
+import { Controller, Get, Param, Post, Body, Put, Delete, Res, HttpCode, UseGuards, BadRequestException, Scope, Patch } from '@nestjs/common';
 import { UserService } from './user.service';
 import { User } from '../entity/user.entity';
 import { ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 import { UserFollow } from 'src/entity/view/user/user-follow';
 import { BaseNotification } from 'src/entity/base.notification';
+import { UserRemoveCategory } from 'src/entity/view/user/user-remove-category';
 
 @ApiTags('Users')
 @Controller('users')
@@ -45,18 +46,12 @@ export class UserController extends BaseNotification {
     return this.userService.create(user);
   }
 
-  @Put()
+  @Patch()
   @UseGuards(AuthGuard('jwt'))
   update(@Body() user: User): Promise<User> {
     
     this.clearNotifications()
-    super.isRequired(user.name, 'Informe o nome')
-    super.isRequired(user.username, 'Informe o username')
-    super.isRequired(user.password, 'Informe a senha')    
-    super.isRequired(user.email, 'Informe o e-mail ')
-    super.isEmail(user.email, 'E-mail inválido')
-    super.hasMaxLen(user.aboutme, 10, 'Aboutme no maximo 300 caracteres')
-
+  
     if(!this.valid())
       throw new BadRequestException(this.allNotifications)
 
@@ -81,6 +76,12 @@ export class UserController extends BaseNotification {
   @Delete('unfollow')
   async unfollowUser(@Body() userf: UserFollow) {    
     await this.userService.unfollowUser(userf.followerId, userf.userId);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Post('removecategoryfromuser')
+  async removeCategoryFromUser(@Body() userremove : UserRemoveCategory) {    
+    await this.userService.removeCategoryFromUser(userremove.userId, userremove.categoryId);
   }
 
 }
