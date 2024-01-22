@@ -161,15 +161,24 @@ export class UserService  {
   }
 
   async followUser(followerId: number, userId: number): Promise<void> {
-    const follower = await this.userRepository.findOne({ where: { id: followerId } });
+    const follower =   await this.userRepository
+    .createQueryBuilder('user')
+    .leftJoinAndSelect('user.following', 'following')
+    .where('user.id = :followerId', { followerId })  
+    .getOne();
+
     const userToFollow = await this.userRepository.findOne({ where: { id: userId} });
 
     if (!follower || !userToFollow) {
       throw new NotFoundException('User not found');
     }
-   
-    follower.following = follower.following || [];
-    follower.following.push(userToFollow);
+       
+    const isAlreadyFollowing = follower.following.some(user => user.id === userId);
+
+    if (!isAlreadyFollowing) {
+      follower.following = follower.following || [];
+      follower.following.push(userToFollow);
+    }
   
     await this.userRepository.save(follower);
   }

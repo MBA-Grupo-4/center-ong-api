@@ -56,7 +56,7 @@ export class User extends BaseEntity {
   @JoinTable()
   categories: Category[];
 
-  @ManyToMany(() => User)
+  @ManyToMany(() => User, {cascade: true})
   @JoinTable({
     name: 'user_followers',
     joinColumn: { name: 'followerId', referencedColumnName: 'id' },
