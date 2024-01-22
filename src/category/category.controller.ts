@@ -10,8 +10,7 @@ export class CategoryController {
     constructor(private readonly categoryService: CategoryService) {}
 
 
-    @Get()
-    @UseGuards(AuthGuard('jwt'))
+    @Get()    
     FindAll() : Promise<Category[]> {
         return this.categoryService.findAll()
     }

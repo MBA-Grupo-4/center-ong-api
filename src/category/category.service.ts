@@ -21,4 +21,8 @@ export class CategoryService {
   async create(category: Category): Promise<Category> {
     return await this.categoryRepository.save(category);
   }
+
+  async remove(category: Category): Promise<void> {
+    await this.categoryRepository.remove(category);
+  }
 }

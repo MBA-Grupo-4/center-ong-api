@@ -7,16 +7,25 @@ export class CategoriesInitializationService implements OnModuleInit {
   constructor(private readonly categoryService: CategoryService) {}
 
   async onModuleInit() {
-    const categoriasPadrao = ['Animais', 'Idosos', 'Crianças e Adolescentes'];
+    const categoriasPadrao = ['Animais', 'Idosos', 'Crianças e Adolescentes', 'Meio Ambiente'];
 
     const categoriasExistentes = await this.categoryService.findAll();
-
-    if (categoriasExistentes.length === 0) {
-      for (const nomeCategoria of categoriasPadrao) {
+    
+    for (const nomeCategoria of categoriasPadrao) {
+      const exist = categoriasExistentes.some(c => c.name == nomeCategoria)        
+      if(!exist){
         const cat = new Category()
         cat.name = nomeCategoria;
         await this.categoryService.create(cat);
       }
     }
+
+    //Remover categorias que não estão na lista padrão
+    const categoriasParaRemover = categoriasExistentes.filter(c => !categoriasPadrao.includes(c.name));
+
+    for (const categoria of categoriasParaRemover) {
+      await this.categoryService.remove(categoria); // Certifique-se de ter um método de remoção adequado em seu serviço.
+    }
+    
   }
 }
