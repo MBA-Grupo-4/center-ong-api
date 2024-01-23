@@ -187,7 +187,10 @@ export class UserService  {
     if (!follower || !userToFollow) {
       throw new NotFoundException('User not found');
     }
-       
+    
+    if(follower.id == userToFollow.id)
+      throw new BadRequestException('Não é possível seguir a si mesmo');
+
     const isAlreadyFollowing = follower.following.some(user => user.id === userId);
 
     if (!isAlreadyFollowing) {
