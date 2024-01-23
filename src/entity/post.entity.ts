@@ -11,7 +11,7 @@ export class Post extends BaseEntity {
   @Column({length: 350})
   content: string;
 
-  @Column()
+  @Column({nullable: true})
   image: string;
 
   @Column({ default: 0 })

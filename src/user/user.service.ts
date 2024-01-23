@@ -162,7 +162,13 @@ export class UserService  {
   }
 
   async findByEmail(email : string) : Promise<User> {     
-        return await this.userRepository.findOne({where : { email : email.trim()}});      
+        return await this.userRepository
+        .createQueryBuilder('user')
+        .leftJoinAndSelect('user.following', 'following')
+        .leftJoinAndSelect('user.categories','categories')
+        .where('user.email = :email', { email })  
+        .getOne();
+         
   }
 
   async updateUserPassword(email: string, newPassword: string): Promise<void> {
