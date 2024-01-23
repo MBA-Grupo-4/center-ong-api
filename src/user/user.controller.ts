@@ -84,7 +84,7 @@ export class UserController extends BaseNotification {
     await this.userService.removeCategoryFromUser(userremove.userId, userremove.categoryId);
   }
 
-  @Get('serchbycategory/:id')
+  @Get('searchbycategory/:id')
   @HttpCode(200)
   @UseGuards(AuthGuard('jwt'))
   async searchByUserCategories(@Param('id') id: number): Promise<User[]> {

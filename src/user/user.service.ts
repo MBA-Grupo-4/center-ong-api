@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException, Scope } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository } from 'typeorm';
+import { In, Not, Repository } from 'typeorm';
 import { User } from '../entity/user.entity';
 import { Category } from 'src/entity/category.entity';
 import * as bcrypt from 'bcrypt';
@@ -241,17 +241,20 @@ export class UserService  {
   }
 
   async searchByUserCategories(userId: number): Promise<User[]> {
-    const user = await this.userRepository.findOne({ where: { id: userId }, relations: ['categories'] });
+    const user = await this.userRepository.findOne({ where: { id: userId }, relations: ['categories', 'following'] });
     
     if (!user) {
       throw new Error('Usuário não encontrado');
     }
-        
+    
+    const followedUserIds = user.following.map(followedUser => followedUser.id);
+
     const usersByCategories = await this.userRepository.find({
       where: {
           category: {
               id: In(user.categories.map(category => category.id))
-          }
+          },
+        id: Not(In([userId, ...followedUserIds]))
       },
       select: ['id', 'name', 'username'],
     });
